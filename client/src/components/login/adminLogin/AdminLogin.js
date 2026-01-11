@@ -1,6 +1,8 @@
+// src/components/login/adminLogin/AdminLogin.js
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { adminSignIn } from "../../../redux/actions/adminActions";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -10,12 +12,10 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, Controller } from "react-hook-form";
 
-const schema = yup
-  .object({
-    username: yup.string().required(),
-    password: yup.string().required(),
-  })
-  .required();
+const schema = yup.object({
+  username: yup.string().required("Username is required"),
+  password: yup.string().required("Password is required"),
+});
 
 const defaultValues = {
   username: "",
@@ -30,120 +30,138 @@ const AdminLogin = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const { isAuthenticated, authData } = useSelector(
+    (state) => state.admin || {}
+  );
+
+  const rawError = useSelector((state) => state.errors);
+
+  // ✅ force error to string (PREVENT WHITE SCREEN)
+  const authError =
+    typeof rawError === "string"
+      ? rawError
+      : rawError?.message
+      ? rawError.message
+      : null;
+
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors: formErrors },
   } = useForm({
     defaultValues,
     resolver: yupResolver(schema),
   });
 
   useEffect(() => {
-    setTimeout(() => {
-      setTranslate(true);
-    }, 1000);
+    const t = setTimeout(() => setTranslate(true), 800);
+    return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && authData) {
+      setLoading(false);
+
+      if (authData?.result?.passwordUpdated === false) {
+        navigate("/admin/update/password");
+      } else {
+        navigate("/admin/home");
+      }
+    }
+  }, [isAuthenticated, authData, navigate]);
+
+  useEffect(() => {
+    if (authError) setLoading(false);
+  }, [authError]);
 
   const onSubmit = ({ username, password }) => {
     setLoading(true);
-
-    dispatch(adminSignIn({ username, password }, navigate));
+    dispatch(adminSignIn({ username, password }));
   };
 
   return (
     <div className="bg-[#04bd7d] h-screen w-screen flex items-center justify-center">
-      <a href="/">
-        <button className="w-32 hover:scale-105 transition-all duration-150 rounded-lg flex items-right justify-center text-white text-base py-1 bg-[#FF2400]">
-          Home
-        </button>
-      </a>
       <div className="grid grid-cols-2">
         <div
           className={`h-96 w-96 bg-white flex items-center justify-center ${
             translate ? "translate-x-[12rem]" : ""
-          }  duration-1000 transition-all rounded-3xl shadow-2xl`}
+          } duration-1000 transition-all rounded-3xl shadow-2xl`}
         >
-          <h1 className="text-[3rem]  font-bold text-center">
-            Admin
-            <br />
-            Login
+          <h1 className="text-[3rem] font-bold text-center">
+            Admin <br /> Login
           </h1>
         </div>
+
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className={`${
-            loading ? "h-[27rem]" : "h-96"
-          } w-96 bg-[#2c2f35] flex flex-col items-center justify-center ${
+          className={`w-96 bg-[#2c2f35] flex flex-col items-center justify-center ${
             translate ? "-translate-x-[12rem]" : ""
-          }  duration-1000 transition-all space-y-6 rounded-3xl shadow-2xl`}
+          } duration-1000 transition-all space-y-6 rounded-3xl shadow-2xl`}
         >
           <h1 className="text-white text-3xl font-semibold">Admin</h1>
-          <div className="space-y-1">
+
+          <div className="w-64">
             <p className="text-[#515966] font-bold text-sm">Username</p>
-            <div
-              className={`bg-[#515966] rounded-lg w-[14rem] flex  items-center ${
-                errors.username ? "border border-red-500" : ""
-              }`}
-            >
-              <Controller
-                name="username"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <input
-                    type="text"
-                    placeholder="Username"
-                    className="bg-[#515966] text-white px-2 outline-none py-2 rounded-lg placeholder:text-sm"
-                    {...field}
-                  />
-                )}
-              />
-            </div>
+            <Controller
+              name="username"
+              control={control}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  className="bg-[#515966] w-full text-white px-2 py-2 rounded-lg outline-none"
+                  placeholder="Username"
+                />
+              )}
+            />
+            {formErrors.username && (
+              <small className="text-red-500">
+                {formErrors.username.message}
+              </small>
+            )}
           </div>
-          <div className="space-y-1">
+
+          <div className="w-64">
             <p className="text-[#515966] font-bold text-sm">Password</p>
-            <div
-              className={`bg-[#515966] rounded-lg px-2 flex items-center ${
-                errors.password ? "border border-red-500" : ""
-              }`}
-            >
+            <div className="flex items-center bg-[#515966] px-2 rounded-lg">
               <Controller
                 name="password"
                 control={control}
-                rules={{ required: true }}
                 render={({ field }) => (
-                  <>
-                    <input
-                      placeholder="Password"
-                      type={showPassword ? "text" : "password"}
-                      pattern="^(?=.*[A-Z])(?=.*[@])(?=.*\d).{6,}$"
-                      title="USE ONE : @-Number-UpperCase (at least 6 character)"
-                      className="bg-[#515966] text-white rounded-lg outline-none py-2  placeholder:text-sm"
-                      {...field}
-                    />
-                    {showPassword ? (
-                      <VisibilityIcon
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="cursor-pointer"
-                      />
-                    ) : (
-                      <VisibilityOffIcon
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="cursor-pointer"
-                      />
-                    )}
-                  </>
+                  <input
+                    {...field}
+                    type={showPassword ? "text" : "password"}
+                    className="bg-[#515966] w-full text-white py-2 outline-none"
+                    placeholder="Password"
+                  />
                 )}
               />
+              {showPassword ? (
+                <VisibilityIcon
+                  className="cursor-pointer text-white"
+                  onClick={() => setShowPassword(false)}
+                />
+              ) : (
+                <VisibilityOffIcon
+                  className="cursor-pointer text-white"
+                  onClick={() => setShowPassword(true)}
+                />
+              )}
             </div>
+            {formErrors.password && (
+              <small className="text-red-500">
+                {formErrors.password.message}
+              </small>
+            )}
           </div>
+
           <button
             type="submit"
-            className="w-32 hover:scale-105 transition-all duration-150 rounded-lg flex items-center justify-center text-white text-base py-1 bg-[#04bd7d]"
+            className="w-32 rounded-lg text-white bg-[#04bd7d] py-2"
+            disabled={loading}
           >
             Login
           </button>
+
           {loading && (
             <Spinner
               message="Logging In"
@@ -153,22 +171,10 @@ const AdminLogin = () => {
               messageColor="#fff"
             />
           )}
-          <ul className="mt-2">
-            {errors.username ? (
-              <li>
-                <small className="text-red-500">
-                  {errors.username.message}
-                </small>
-              </li>
-            ) : null}
-            {errors.password ? (
-              <li>
-                <small className="text-red-500">
-                  {errors.password.message}
-                </small>
-              </li>
-            ) : null}
-          </ul>
+
+          {authError && (
+            <small className="text-red-500 mt-2">{authError}</small>
+          )}
         </form>
       </div>
     </div>

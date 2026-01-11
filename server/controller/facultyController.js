@@ -4,7 +4,7 @@ import Student from "../models/student.js";
 import Subject from "../models/subject.js";
 import Marks from "../models/marks.js";
 import Attendence from "../models/attendance.js";
-import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken"; 
 import bcrypt from "bcryptjs";
 
 export const facultyLogin = async (req, res) => {

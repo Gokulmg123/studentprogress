@@ -1,3 +1,5 @@
+// src/redux/actions/adminActions.js
+
 import {
   ADMIN_LOGIN,
   UPDATE_ADMIN,
@@ -24,212 +26,84 @@ import {
   CREATE_NOTICE,
   GET_NOTICE,
 } from "../actionTypes";
+
 import * as api from "../api";
 
-export const adminSignIn = (formData, navigate) => async (dispatch) => {
-
+/* =======================
+   ADMIN LOGIN (FIXED)
+======================= */
+export const adminSignIn = (formData) => async (dispatch) => {
   try {
-    const { data }  = await api.adminSignIn(formData);
-    console.log(data);
-    await dispatch({ type: ADMIN_LOGIN, data });
-    console.log("data");
-    if (data.result.passwordUpdated) navigate("/admin/home");
-    else navigate("/admin/update/password");
+    dispatch({ type: SET_ERRORS, payload: null });
+
+    const { data } = await api.adminSignIn(formData);
+
+    // ✅ BACKEND RETURNS: { result, token }
+    const authData = {
+      result: data.result,
+      token: data.token,
+    };
+
+    // ✅ SINGLE SOURCE OF TRUTH
+    localStorage.setItem("user", JSON.stringify(authData));
+
+    dispatch({
+      type: ADMIN_LOGIN,
+      payload: authData,
+    });
   } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.message });
+    const err = error?.response?.data;
+
+    dispatch({
+      type: SET_ERRORS,
+      payload:
+        err?.usernameError ||
+        err?.passwordError ||
+        err?.message ||
+        "Login failed",
+    });
   }
 };
 
+/* =======================
+   UPDATE PASSWORD
+======================= */
 export const adminUpdatePassword = (formData, navigate) => async (dispatch) => {
   try {
-    const { data } = await api.adminUpdatePassword(formData);
+    dispatch({ type: SET_ERRORS, payload: null });
+
+    await api.adminUpdatePassword(formData);
+
     dispatch({ type: UPDATE_PASSWORD, payload: true });
-    alert("Password Updated");
     navigate("/admin/home");
   } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
+    dispatch({
+      type: SET_ERRORS,
+      payload:
+        error?.response?.data?.message || "Password update failed",
+    });
   }
 };
 
+/* =======================
+   STUDENT
+======================= */
 export const getAllStudent = () => async (dispatch) => {
   try {
     const { data } = await api.getAllStudent();
-    dispatch({ type: GET_ALL_STUDENT, payload: data });
-  } catch (error) {
-    console.log("Redux Error", error);
-  }
-};
-export const getAllFaculty = () => async (dispatch) => {
-  try {
-    const { data } = await api.getAllFaculty();
-    dispatch({ type: GET_ALL_FACULTY, payload: data });
-  } catch (error) {
-    console.log("Redux Error", error);
-  }
-};
-
-export const getAllAdmin = () => async (dispatch) => {
-  try {
-    const { data } = await api.getAllAdmin();
-    dispatch({ type: GET_ALL_ADMIN, payload: data });
-  } catch (error) {
-    console.log("Redux Error", error);
-  }
-};
-
-export const getAllDepartment = () => async (dispatch) => {
-  try {
-    const { data } = await api.getAllDepartment();
-    dispatch({ type: GET_ALL_DEPARTMENT, payload: data });
-  } catch (error) {
-    console.log("Redux Error", error);
-  }
-};
-
-export const getAllSubject = () => async (dispatch) => {
-  try {
-    const { data } = await api.getAllSubject();
-    dispatch({ type: GET_ALL_SUBJECT, payload: data });
-  } catch (error) {
-    console.log("Redux Error", error);
-  }
-};
-
-export const updateAdmin = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.updateAdmin(formData);
-    dispatch({ type: UPDATE_ADMIN, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-
-export const addAdmin = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.addAdmin(formData);
-    alert("Admin Added Successfully");
-    dispatch({ type: ADD_ADMIN, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-export const createNotice = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.createNotice(formData);
-    alert("Notice Created Successfully");
-    dispatch({ type: CREATE_NOTICE, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-export const getAdmin = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.getAdmin(formData);
-    dispatch({ type: GET_STUDENT, payload: data });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-export const deleteAdmin = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.deleteAdmin(formData);
-    alert("Admin Deleted");
-    dispatch({ type: DELETE_ADMIN, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-export const deleteFaculty = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.deleteFaculty(formData);
-    alert("Faculty Deleted");
-    dispatch({ type: DELETE_FACULTY, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-export const deleteStudent = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.deleteStudent(formData);
-    alert("Student Deleted");
-    dispatch({ type: DELETE_STUDENT, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-export const deleteSubject = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.deleteSubject(formData);
-    alert("Subject Deleted");
-    dispatch({ type: DELETE_SUBJECT, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-export const deleteDepartment = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.deleteDepartment(formData);
-    alert("Department Deleted");
-    dispatch({ type: DELETE_DEPARTMENT, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-export const addDepartment = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.addDepartment(formData);
-    alert("Department Added Successfully");
-    dispatch({ type: ADD_DEPARTMENT, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-
-export const addFaculty = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.addFaculty(formData);
-    alert("Faculty Added Successfully");
-    dispatch({ type: ADD_FACULTY, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-
-export const getFaculty = (department) => async (dispatch) => {
-  try {
-    const { data } = await api.getFaculty(department);
-    dispatch({ type: GET_FACULTY, payload: data });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-
-export const addSubject = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.addSubject(formData);
-    alert("Subject Added Successfully");
-    dispatch({ type: ADD_SUBJECT, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
-  }
-};
-
-export const getSubject = (formData) => async (dispatch) => {
-  try {
-    const { data } = await api.getSubject(formData);
-    dispatch({ type: GET_SUBJECT, payload: data });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
+    dispatch({ type: GET_ALL_STUDENT, payload: data || [] });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Failed to load students" });
   }
 };
 
 export const addStudent = (formData) => async (dispatch) => {
   try {
-    const { data } = await api.addStudent(formData);
-    alert("Student Added Successfully");
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.addStudent(formData);
     dispatch({ type: ADD_STUDENT, payload: true });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Add student failed" });
   }
 };
 
@@ -237,16 +111,195 @@ export const getStudent = (formData) => async (dispatch) => {
   try {
     const { data } = await api.getStudent(formData);
     dispatch({ type: GET_STUDENT, payload: data });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Student not found" });
   }
 };
 
-export const getNotice = (formData) => async (dispatch) => {
+export const deleteStudent = (formData) => async (dispatch) => {
   try {
-    const { data } = await api.getNotice(formData);
-    dispatch({ type: GET_NOTICE, payload: data });
-  } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.deleteStudent(formData);
+    dispatch({ type: DELETE_STUDENT, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Delete student failed" });
+  }
+};
+
+/* =======================
+   FACULTY
+======================= */
+export const getAllFaculty = () => async (dispatch) => {
+  try {
+    const { data } = await api.getAllFaculty();
+    dispatch({ type: GET_ALL_FACULTY, payload: data || [] });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Failed to load faculty" });
+  }
+};
+
+export const addFaculty = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.addFaculty(formData);
+    dispatch({ type: ADD_FACULTY, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Add faculty failed" });
+  }
+};
+
+export const getFaculty = (department) => async (dispatch) => {
+  try {
+    const { data } = await api.getFaculty(department);
+    dispatch({ type: GET_FACULTY, payload: data || [] });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Faculty not found" });
+  }
+};
+
+export const deleteFaculty = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.deleteFaculty(formData);
+    dispatch({ type: DELETE_FACULTY, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Delete faculty failed" });
+  }
+};
+
+/* =======================
+   ADMIN
+======================= */
+export const getAllAdmin = () => async (dispatch) => {
+  try {
+    const { data } = await api.getAllAdmin();
+    dispatch({ type: GET_ALL_ADMIN, payload: data || [] });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Failed to load admins" });
+  }
+};
+
+export const addAdmin = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.addAdmin(formData);
+    dispatch({ type: ADD_ADMIN, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Add admin failed" });
+  }
+};
+
+export const deleteAdmin = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.deleteAdmin(formData);
+    dispatch({ type: DELETE_ADMIN, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Delete admin failed" });
+  }
+};
+
+export const updateAdmin = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.updateAdmin(formData);
+    dispatch({ type: UPDATE_ADMIN, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Update admin failed" });
+  }
+};
+
+/* =======================
+   DEPARTMENT
+======================= */
+export const getAllDepartment = () => async (dispatch) => {
+  try {
+    const { data } = await api.getAllDepartment();
+    dispatch({ type: GET_ALL_DEPARTMENT, payload: data || [] });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Failed to load departments" });
+  }
+};
+
+export const addDepartment = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.addDepartment(formData);
+    dispatch({ type: ADD_DEPARTMENT, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Add department failed" });
+  }
+};
+
+export const deleteDepartment = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.deleteDepartment(formData);
+    dispatch({ type: DELETE_DEPARTMENT, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Delete department failed" });
+  }
+};
+
+/* =======================
+   SUBJECT
+======================= */
+export const getAllSubject = () => async (dispatch) => {
+  try {
+    const { data } = await api.getAllSubject();
+    dispatch({ type: GET_ALL_SUBJECT, payload: data || [] });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Failed to load subjects" });
+  }
+};
+
+export const addSubject = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.addSubject(formData);
+    dispatch({ type: ADD_SUBJECT, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Add subject failed" });
+  }
+};
+
+export const getSubject = (formData) => async (dispatch) => {
+  try {
+    const { data } = await api.getSubject(formData);
+    dispatch({ type: GET_SUBJECT, payload: data });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Subject not found" });
+  }
+};
+
+export const deleteSubject = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.deleteSubject(formData);
+    dispatch({ type: DELETE_SUBJECT, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Delete subject failed" });
+  }
+};
+
+/* =======================
+   NOTICE
+======================= */
+export const createNotice = (formData) => async (dispatch) => {
+  try {
+    dispatch({ type: SET_ERRORS, payload: null });
+    await api.createNotice(formData);
+    dispatch({ type: CREATE_NOTICE, payload: true });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Create notice failed" });
+  }
+};
+
+export const getNotice = () => async (dispatch) => {
+  try {
+    const { data } = await api.getNotice();
+    dispatch({ type: GET_NOTICE, payload: data || [] });
+  } catch {
+    dispatch({ type: SET_ERRORS, payload: "Failed to load notices" });
   }
 };

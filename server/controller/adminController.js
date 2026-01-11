@@ -99,10 +99,15 @@ export const updateAdmin = async (req, res) => {
     }
     res.status(200).json(updatedAdmin);
   } catch (error) {
-    const errors = { backendError: String };
-    errors.backendError = error;
-    res.status(500).json(errors);
-  }
+  console.error("ADD ADMIN ERROR:", error);
+
+  res.status(500).json({
+    message: "Add admin failed",
+    error: error.message,
+    stack: error.stack
+  });
+}
+
 };
 
 export const addAdmin = async (req, res) => {

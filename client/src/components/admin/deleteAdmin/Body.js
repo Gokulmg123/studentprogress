@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useDispatch, useSelector } from "react-redux";
-import { getAdmin, deleteAdmin } from "../../../redux/actions/adminActions";
+import { getAllAdmin, deleteAdmin } from "../../../redux/actions/adminActions";
 import { MenuItem, Select } from "@mui/material";
 import Spinner from "../../../utils/Spinner";
 import * as classes from "../../../utils/styles";
@@ -44,7 +44,7 @@ const Body = () => {
     setSearch(true);
     setLoading(true);
     setError({});
-    dispatch(getAdmin(value));
+    dispatch(getAllAdmin(value));
   };
   const students = useSelector((state) => state.admin.students.result);
 

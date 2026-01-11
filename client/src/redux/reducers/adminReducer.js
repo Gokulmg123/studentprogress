@@ -28,155 +28,125 @@ import {
 
 const initialState = {
   authData: null,
+  isAuthenticated: false,
+
   updatedPassword: false,
   updatedAdmin: false,
+
   adminAdded: false,
   departmentAdded: false,
   facultyAdded: false,
   studentAdded: false,
   subjectAdded: false,
-  allFaculty: [],
-  allSubject: [],
-  allStudent: [],
-  allAdmin: [],
-  allDepartment: [],
-  students: [],
-  faculties: [],
-  subjects: [],
-  admins: [],
-  notices: [],
+  noticeCreated: false,
+
   adminDeleted: false,
   departmentDeleted: false,
   facultyDeleted: false,
   studentDeleted: false,
   subjectDeleted: false,
-  noticeCreated: false,
+
+  allFaculty: [],
+  allSubject: [],
+  allStudent: [],
+  allAdmin: [],
+  allDepartment: [],
+
+  faculties: [],
+  subjects: [],
+  students: [],
+  admins: [],
+  notices: [],
 };
 
 const adminReducer = (state = initialState, action) => {
   switch (action.type) {
+    /* ================= AUTH ================= */
     case ADMIN_LOGIN:
-      console.log(action);
-      localStorage.setItem("user", JSON.stringify({ ...action?.data }));
-      return { ...state, authData: action?.data };
+      return {
+        ...state,
+        authData: action.payload,
+        isAuthenticated: true,
+      };
+
     case LOGOUT:
-      localStorage.clear();
-      return { ...state, authData: null };
+      return {
+        ...state,
+        authData: null,
+        isAuthenticated: false,
+      };
+
+    /* ================= FLAGS ================= */
     case UPDATE_PASSWORD:
-      return {
-        ...state,
-        updatedPassword: action.payload,
-      };
+      return { ...state, updatedPassword: true };
+
     case UPDATE_ADMIN:
-      return {
-        ...state,
-        updatedAdmin: action.payload,
-      };
+      return { ...state, updatedAdmin: true };
+
     case ADD_ADMIN:
-      return {
-        ...state,
-        adminAdded: action.payload,
-      };
-    case CREATE_NOTICE:
-      return {
-        ...state,
-        noticeCreated: action.payload,
-      };
-    case DELETE_ADMIN:
-      return {
-        ...state,
-        adminDeleted: action.payload,
-      };
-    case DELETE_DEPARTMENT:
-      return {
-        ...state,
-        departmentDeleted: action.payload,
-      };
-    case DELETE_FACULTY:
-      return {
-        ...state,
-        facultyDeleted: action.payload,
-      };
-    case DELETE_STUDENT:
-      return {
-        ...state,
-        studentDeleted: action.payload,
-      };
-    case DELETE_SUBJECT:
-      return {
-        ...state,
-        subjectDeleted: action.payload,
-      };
+      return { ...state, adminAdded: true };
+
     case ADD_DEPARTMENT:
-      return {
-        ...state,
-        departmentAdded: action.payload,
-      };
+      return { ...state, departmentAdded: true };
+
     case ADD_FACULTY:
-      return {
-        ...state,
-        facultyAdded: action.payload,
-      };
-    case GET_FACULTY:
-      return {
-        ...state,
-        faculties: action.payload,
-      };
-    case GET_NOTICE:
-      return {
-        ...state,
-        notices: action.payload,
-      };
-    case GET_ADMIN:
-      return {
-        ...state,
-        admins: action.payload,
-      };
-    case GET_ALL_FACULTY:
-      return {
-        ...state,
-        allFaculty: action.payload,
-      };
-    case GET_ALL_ADMIN:
-      return {
-        ...state,
-        allAdmin: action.payload,
-      };
-    case GET_ALL_DEPARTMENT:
-      return {
-        ...state,
-        allDepartment: action.payload,
-      };
-    case ADD_SUBJECT:
-      return {
-        ...state,
-        subjectAdded: action.payload,
-      };
-    case GET_SUBJECT:
-      return {
-        ...state,
-        subjects: action.payload,
-      };
-    case GET_ALL_SUBJECT:
-      return {
-        ...state,
-        allSubject: action.payload,
-      };
+      return { ...state, facultyAdded: true };
+
     case ADD_STUDENT:
-      return {
-        ...state,
-        studentAdded: action.payload,
-      };
+      return { ...state, studentAdded: true };
+
+    case ADD_SUBJECT:
+      return { ...state, subjectAdded: true };
+
+    case CREATE_NOTICE:
+      return { ...state, noticeCreated: true };
+
+    case DELETE_ADMIN:
+      return { ...state, adminDeleted: true };
+
+    case DELETE_DEPARTMENT:
+      return { ...state, departmentDeleted: true };
+
+    case DELETE_FACULTY:
+      return { ...state, facultyDeleted: true };
+
+    case DELETE_STUDENT:
+      return { ...state, studentDeleted: true };
+
+    case DELETE_SUBJECT:
+      return { ...state, subjectDeleted: true };
+
+    /* ================= DATA ================= */
+    case GET_FACULTY:
+      return { ...state, faculties: action.payload || [] };
+
+    case GET_SUBJECT:
+      return { ...state, subjects: action.payload || [] };
+
     case GET_STUDENT:
-      return {
-        ...state,
-        students: action.payload,
-      };
+      return { ...state, students: action.payload || [] };
+
+    case GET_ADMIN:
+      return { ...state, admins: action.payload || [] };
+
+    case GET_NOTICE:
+      return { ...state, notices: action.payload || [] };
+
+    case GET_ALL_FACULTY:
+      return { ...state, allFaculty: action.payload || [] };
+
+    case GET_ALL_SUBJECT:
+      return { ...state, allSubject: action.payload || [] };
+
     case GET_ALL_STUDENT:
-      return {
-        ...state,
-        allStudent: action.payload,
-      };
+      return { ...state, allStudent: action.payload || [] };
+
+    case GET_ALL_ADMIN:
+      return { ...state, allAdmin: action.payload || [] };
+
+    case GET_ALL_DEPARTMENT:
+      return { ...state, allDepartment: action.payload || [] };
+
     default:
       return state;
   }
